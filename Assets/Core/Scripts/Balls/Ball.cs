@@ -2,23 +2,20 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(SphereCollider))]
-public class BallPlayer : MonoBehaviour
+
+public abstract class Ball : MonoBehaviour
 {
-    [SerializeField] float speedMove;
-    [SerializeField] float speedRotation;
-    [SerializeField] float height;
+    [Header("Move")]
+    public float speed;
+    public float height;
+    [HideInInspector] public Rigidbody rb;
 
-    Rigidbody rb;
-
-    void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    void FixedUpdate()
-    {
-        rb.AddTorque(Vector3.right * speedRotation);
-    }
+    public abstract void Move();
 
     private void OnCollisionEnter(Collision collision)
     {
