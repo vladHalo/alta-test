@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -17,11 +18,29 @@ public abstract class Ball : MonoBehaviour
 
     public abstract void Move();
 
-    private void OnCollisionEnter(Collision collision)
+    public abstract void Die();
+    
+    void OnFireWork()
     {
-        if (collision.gameObject.layer == 3)
+        var firework = GameManager.instance.firework;
+        firework.transform.position = transform.position;
+        firework.Play();
+    }
+
+    public void Jump(int layer)
+    {
+        if (layer == 3) rb.AddForce(new Vector3(0, height, 0), ForceMode.VelocityChange);
+    }
+
+    public IEnumerator GrowIn()
+    {
+        while (transform.localScale.x > 0)
         {
-            rb.AddForce(new Vector3(0, height, 0), ForceMode.VelocityChange);
+            transform.localScale -= new Vector3(.1f, .1f, .1f);
+            yield return new WaitForEndOfFrame();
         }
+
+        OnFireWork();
+        Die();
     }
 }

@@ -1,16 +1,25 @@
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
     [Header("Platform")]
-    [SerializeField] Transform platform;
-    [SerializeField] Vector2 minMaxWidth;
+    public Transform platform;
+    public Vector2 minMaxWidth;
 
     [SerializeField] Transform finishPlatform;
 
     [Header("Ball")]
     public BallPlayer mainBall;
+
+    [Header("FireWork")]
+    public ParticleSystem firework;
+
+    [Header("Restart")]
+    public UI uI;
+    public System.Action restartAction;
+    public bool isDead;
 
     private void Start()
     {
@@ -22,20 +31,28 @@ public class GameManager : Singleton<GameManager>
         Controller();
     }
 
-    [Button("Restart")]
     void InitPlatform()
     {
         var width = Random.Range(minMaxWidth.x, minMaxWidth.y);
-        platform.localScale = new Vector3(platform.localScale.x, platform.localScale.y, width);
+        platform.localScale = new Vector3(mainBall.transform.localScale.x, 1, width);
         platform.position = new Vector3(platform.position.x, platform.position.y, width / 2 - .5f);
 
         var finishPosition = width / 2 + finishPlatform.localScale.z / 2 + platform.position.z;
         finishPlatform.position = new Vector3(finishPlatform.position.x, finishPlatform.position.y, finishPosition);
     }
 
+    [Button("Restart", EButtonEnableMode.Playmode)]
+    public void Restart()
+    {
+        isDead = false;
+        restartAction?.Invoke();
+        InitPlatform();
+        StopAllCoroutines();
+    }
+
     void Controller()
     {
-        if (mainBall == null) return;
+        if (isDead) return;
 
 #if (UNITY_EDITOR)
         if (Input.GetMouseButtonDown(0))
@@ -60,15 +77,15 @@ public class GameManager : Singleton<GameManager>
                     break;
 
                 case TouchPhase.Stationary:
-                    mainBall.GrowOutIn();
+                    mainBall.GrowOutIn(platform);
                     break;
 
                 case TouchPhase.Moved:
-                    mainBall.GrowOutIn();
+                    mainBall.GrowOutIn(platform);
                     break;
 
                 case TouchPhase.Ended:
-                    mainBall.growBallShot.Move();
+                    mainBall.MoveGrowBall();
                     break;
             }
         }

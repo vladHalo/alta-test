@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2323986372779247309}
   - component: {fileID: 916618250932661777}
   - component: {fileID: 8841377888851979949}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BallShot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,3 +130,4 @@ MonoBehaviour:
   speed: 1500
   height: 4
   rb: {fileID: 0}
+  multRadius: 5

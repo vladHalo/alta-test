@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class BallPlayer : Ball
 {
+    [SerializeField] Transform startPosition;
+
     [Header("Shot")]
     [SerializeField] GameObject prefabBallShot;
     [HideInInspector] public BallShot growBallShot;
@@ -12,6 +14,7 @@ public class BallPlayer : Ball
     private void Start()
     {
         gameManager = GameManager.instance;
+        gameManager.restartAction += Restart;
         transform.position = new Vector3(transform.position.x, transform.position.y, transform.localScale.x / 2);
     }
 
@@ -29,6 +32,7 @@ public class BallPlayer : Ball
     {
         growBallShot = Instantiate(prefabBallShot, ShotStartPosition(prefabBallShot.transform), Quaternion.identity).GetComponent<BallShot>();
         growBallShot.transform.localScale = Vector3.zero;
+        Destroy(growBallShot.gameObject, 10);
     }
 
     Vector3 ShotStartPosition(Transform ball)
@@ -43,7 +47,7 @@ public class BallPlayer : Ball
         {
             platform.localScale = Vector3.zero;
             MoveGrowBall();
-            Die();
+            StartCoroutine(GrowIn());
             return;
         }
 
@@ -60,11 +64,35 @@ public class BallPlayer : Ball
         growBallShot = null;
     }
 
-    void Die()
+    public override void Die()
     {
-        gameManager.mainBall = null;
-        Destroy(gameObject);
+        gameManager.isDead = true;
+        rb.isKinematic = true;
+        gameObject.SetActive(false);
 
         Debug.Log("Lose");
+        gameManager.uI.OnMenu(0);
+    }
+
+    public void Win()
+    {
+        rb.isKinematic = true;
+        gameObject.SetActive(false);
+
+        gameManager.uI.OnMenu(1);
+    }
+
+    public void Restart()
+    {
+        transform.position = startPosition.position;
+        transform.localScale = startPosition.localScale;
+        rb.isKinematic = false;
+        gameObject.SetActive(true);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.TryGetComponent(out Block block)) StartCoroutine(GrowIn());
+        Jump(collision.gameObject.layer);
     }
 }
